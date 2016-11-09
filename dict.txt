@@ -1,0 +1,22 @@
+alligator alligator
+bed bed
+behind behind
+black black
+blue blue
+box box
+cat cat
+chair chair
+flowers flowers
+green green
+in in
+on on
+orange orange
+snake snake
+spider spider
+under under
+wagon wagon
+wall wall
+white white
+sil sil
+SENT-START [] sil
+SENT-END [] sil
