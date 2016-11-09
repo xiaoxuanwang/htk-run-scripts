@@ -16,7 +16,7 @@ def run_recog(filename):
 	return result
 
 
-TCP_IP = '128.61.10.244'
+TCP_IP = '128.61.14.117'
 # TCP_IP = '192.168.1.68'
 TCP_PORT = 9740
 BUFFER_SIZE = 1450  # Normally 1024, but we want fast response

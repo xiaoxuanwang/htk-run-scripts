@@ -24,6 +24,15 @@ def delta(featVectList):
         deltaFeat.append(str("{0:.5f}".format(d)))
     return deltaFeat
 
+
+def calVector(p1, p2):
+    v = []
+    for i in range(len(p1)):
+        p = float(p2[i]) - float(p1[i])
+        v.append(str("{0:.5f}".format(p)))
+    return v
+
+
 # var yaw = atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z);
 # var pitch = asin(-2.0*(q.x*q.z - q.w*q.y));
 # var roll = atan2(2.0*(q.x*q.y + q.w*q.z), q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z);
@@ -39,7 +48,7 @@ def rollFromQuant(quant):
 
 
 if len(sys.argv) != 3:
-    print "Usage: featExtraction.py inputFile featureIndex"
+    print "Usage: featExtraction.py inputFile outFolderName featureIndex"
     print "Please input the feature set that you want to generated and seperated the index by comma: \n" +\
           "0:     hand position\n" +\
           "1:     hand position delta\n" +\
@@ -48,7 +57,10 @@ if len(sys.argv) != 3:
           "4:     thumb & hand distance\n" +\
           "5:     thumb & hand distance delta\n" +\
           "6:     thumb & hand distance delta & hand orientation\n" +\
-          "7:     Roll of hand quanternion\n\n" +\
+          "7:     Roll of hand quanternion\n" +\
+          "8:     shoulder & elbow vector \n" +\
+          "9:     elbow & hand vector \n" +\
+          "10:    left & right hand vector \n\n" +\
           "Example input:  python featExtraction.py handPosition 1,2"
     exit
 
@@ -60,7 +72,10 @@ featureNameSets = [
     "thumbHandDistance",
     "thumbHandDistanceDelta",
     "handOrientation",
-    "handRoll"
+    "handRoll",
+    "shoulderElbowVector",
+    "elbowHandVector",
+    "leftRightHandVector"
 ];
 
 
@@ -75,6 +90,12 @@ thumbHandDistance = []
 thumbHandDistanceDelta = []
 handOrientation = []
 handRoll = []
+shoulderPosition = []
+elbowPosition = []
+shoulderElbowVector = []
+elbowHandVector = []
+leftRightHandVector = []
+
 
 # featureName = sys.argv[2]
 # arkFolder = featureName + "/ark"
@@ -82,11 +103,11 @@ handRoll = []
 
 featureIndex = [int(i) for i in sys.argv[2].split(",")]
 
-
-# inputFile = io.open(sys.argv[1], "r", encoding="utf-16-le")
 inputFile = io.open(sys.argv[1], "r")
 
-name = sys.argv[1] + ".ark"
+# inputFile = io.open(sys.argv[1], "r", encoding="utf-16-le")
+
+name = sys.argv[1].replace(".txt", ".txt.ark")
 
 outFile = open(name, 'w')
 
@@ -94,7 +115,6 @@ outFile = open(name, 'w')
 
 line = inputFile.readline()
 line = line.strip("\r\n")
-print line
 
 # feature before " |||" are orientation features
 orientationFeats = line.split("  ||| ")[0].split(" ")
@@ -104,6 +124,7 @@ handOrientation.append(orientationFeats[36:44])
 # handRoll.append(
 #     [rollFromQuant(orientationFeats[36:40]),
 #      rollFromQuant(orientationFeats[40:44])])
+
 
 # feature after "  ||| " are position features
 line = line.split("  ||| ")[1]
@@ -133,6 +154,18 @@ tipHandDistance.append(tipHandD)
 tipHandDistanceDelta.append(tipHandD)
 # print "tip features distance:"
 # print tipHandD
+
+
+# Shoulder -> elbow vector feature
+shoulderFeatures = features[6:12]
+shoulderPosition.append(shoulderFeatures)
+elbowFeatures = features[15:21]
+elbowPosition.append(elbowFeatures)
+
+# Calculate vectors
+shoulderElbowVector.append(calVector(shoulderFeatures, elbowFeatures))
+elbowHandVector.append(calVector(elbowFeatures, handFeatures))
+leftRightHandVector.append(calVector(handFeatures[0:3], handFeatures[3:]))
 
 
 while True:
@@ -177,6 +210,18 @@ while True:
     tipHandDistance.append(tipHandD)
     tipHandDistanceDelta.append(delta(tipHandDistance))
 
+    # shoulder & elbow features
+    shoulderFeatures = features[6:12]
+    shoulderPosition.append(shoulderFeatures)
+    elbowFeatures = features[15:21]
+    elbowPosition.append(elbowFeatures)
+
+    # Calculate vectors
+    shoulderElbowVector.append(calVector(shoulderFeatures, elbowFeatures))
+    elbowHandVector.append(calVector(elbowFeatures, handFeatures))
+    leftRightHandVector.append(calVector(handFeatures[0:3], handFeatures[3:]))
+
+
 
 for i in range(len(handPosition)):
     featureLine = ""
@@ -200,8 +245,14 @@ for i in range(len(handPosition)):
         featureLine += " ".join(thumbHandDistanceDelta[i]) + ' '
     if 6 in featureIndex:
         featureLine += " ".join(handOrientation[i]) + ' '
-    # if 7 in featureIndex:
-    #     featureLine += " ".join(handRoll[i]) + ' '
+    if 7 in featureIndex:
+        featureLine += " ".join(handRoll[i]) + ' '
+    if 8 in featureIndex:
+        featureLine += " ".join(shoulderElbowVector[i]) + ' '
+    if 9 in featureIndex:
+        featureLine += " ".join(elbowHandVector[i]) + ' '
+    if 10 in featureIndex:
+        featureLine += " ".join(leftRightHandVector[i]) + ' '
 
 
     featureLine = featureLine.strip(" ")

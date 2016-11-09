@@ -43,7 +43,7 @@ MODEL=$3;
 
 # Prepare the feature file
 # Convert txt to hand_pos_tip_thumb feature
-python scripts/featExtraction.py ./testsets/$1 0,2,4
+python scripts/featExtraction.py testsets/$1 8,9,10
 copy-feats-to-htk --output-dir=testsets --output-ext=ext --sample-period=40000 ark:./testsets/$1.ark
 
 
